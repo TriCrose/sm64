@@ -19,25 +19,8 @@
 #include "levels/intro/header.h"
 
 const LevelScript level_intro_entry_1[] = {
-    INIT_LEVEL(),
-    FIXED_LOAD(/*loadAddr*/ _goddardSegmentStart, /*romStart*/ _goddardSegmentRomStart, /*romEnd*/ _goddardSegmentRomEnd),
-    LOAD_RAW(/*seg*/ 0x13, _behaviorSegmentRomStart, _behaviorSegmentRomEnd),
-    LOAD_MIO0(/*seg*/ 0x07, _intro_segment_7SegmentRomStart, _intro_segment_7SegmentRomEnd),
-    ALLOC_LEVEL_POOL(),
-
-    AREA(/*index*/ 1, intro_geo_0002D0),
-    END_AREA(),
-
-    FREE_LEVEL_POOL(),
-    LOAD_AREA(/*area*/ 1),
-    CALL(/*arg*/ 0, /*func*/ lvl_intro_update),
-    SLEEP(/*frames*/ 75),
-    TRANSITION(/*transType*/ WARP_TRANSITION_FADE_INTO_COLOR, /*time*/ 16, /*color*/ 0x00, 0x00, 0x00),
-    SLEEP(/*frames*/ 16),
-    CMD2A(/*unk2*/ 1),
-    CLEAR_LEVEL(),
-    SLEEP(/*frames*/ 2),
-    EXIT_AND_EXECUTE(/*seg*/ 0x14, _introSegmentRomStart, _introSegmentRomEnd, level_intro_entry_2),
+    SET_REG(/*value*/ LEVEL_CASTLE_GROUNDS),
+    EXIT_AND_EXECUTE(/*seg*/ 0x15, _scriptsSegmentRomStart, _scriptsSegmentRomEnd, level_main_scripts_entry)
 };
 
 const LevelScript level_intro_entry_2[] = {
