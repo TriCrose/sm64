@@ -783,7 +783,11 @@ static u32 set_mario_action_airborne(struct MarioState *m, u32 action, u32 actio
 
     switch (action) {
         case ACT_DOUBLE_JUMP:
-            set_mario_y_vel_based_on_fspeed(m, 52.0f, 0.25f);
+            if (actionArg == 0) {
+                set_mario_y_vel_based_on_fspeed(m, 52.0f, 0.25f);
+            } else if (actionArg == 1) {
+                set_mario_y_vel_based_on_fspeed(m, 42.0f, 0.25f);
+            }
             m->forwardVel *= 0.8f;
             break;
 

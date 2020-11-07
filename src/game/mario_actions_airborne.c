@@ -14,6 +14,18 @@
 #include "save_file.h"
 #include "thread6.h"
 
+s32 check_mid_air_jump(struct MarioState *m) {
+    if (m->input & INPUT_A_PRESSED) {
+        set_mario_action(m, ACT_DOUBLE_JUMP, 1);
+        m->particleFlags |= PARTICLE_MIST_CIRCLE;
+        m->faceAngle[1] = m->intendedYaw;
+        m->forwardVel *= m->intendedMag/32.0f;
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
 void play_flip_sounds(struct MarioState *m, s16 frame1, s16 frame2, s16 frame3) {
     s32 animFrame = m->marioObj->header.gfx.animInfo.animFrame;
     if (animFrame == frame1 || animFrame == frame2 || animFrame == frame3) {
@@ -612,6 +624,10 @@ s32 act_side_flip(struct MarioState *m) {
 }
 
 s32 act_wall_kick_air(struct MarioState *m) {
+    if (++m->actionTimer > 3 && check_mid_air_jump(m)) {
+        return TRUE;
+    }
+
     if (m->input & INPUT_B_PRESSED) {
         return set_mario_action(m, ACT_DIVE, 0);
     }
@@ -627,6 +643,11 @@ s32 act_wall_kick_air(struct MarioState *m) {
 
 s32 act_long_jump(struct MarioState *m) {
     s32 animation;
+
+    if (++m->actionTimer > 3 && check_mid_air_jump(m)) {
+        return TRUE;
+    }
+
     if (!m->marioObj->oMarioLongJumpIsSlow) {
         animation = MARIO_ANIM_FAST_LONGJUMP;
     } else {
