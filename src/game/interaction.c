@@ -770,64 +770,93 @@ u32 interact_star_or_key(struct MarioState *m, UNUSED u32 interactType, struct O
     u32 starGrabAction = ACT_STAR_DANCE_EXIT;
     u32 noExit = (o->oInteractionSubtype & INT_SUBTYPE_NO_EXIT) != 0;
     u32 grandStar = (o->oInteractionSubtype & INT_SUBTYPE_GRAND_STAR) != 0;
+    u32 fastCollect = !(grandStar || gCurrLevelNum == LEVEL_BOWSER_1 || gCurrLevelNum == LEVEL_BOWSER_2);
 
     if (m->health >= 0x100) {
-        mario_stop_riding_and_holding(m);
+        if (fastCollect) {
+            /* Fast collect: just do necessary stuff like updating the save file but don't change mario's state */
+
 #ifdef VERSION_SH
-        queue_rumble_data(5, 80);
+            queue_rumble_data(5, 80);
 #endif
+            spawn_object(o, MODEL_NONE, bhvStarKeyCollectionPuffSpawner);
 
-        if (!noExit) {
-            m->hurtCounter = 0;
-            m->healCounter = 0;
-            if (m->capTimer > 1) {
-                m->capTimer = 1;
-            }
-        }
+            o->oInteractStatus = INT_STATUS_INTERACTED;
+            m->interactObj = o;
+            m->usedObj = o;
 
-        if (noExit) {
-            starGrabAction = ACT_STAR_DANCE_NO_EXIT;
-        }
+            starIndex = (o->oBehParams >> 24) & 0x1F;
+            save_file_collect_star_or_key(m->numCoins, starIndex);
 
-        if (m->action & ACT_FLAG_SWIMMING) {
-            starGrabAction = ACT_STAR_DANCE_WATER;
-        }
+            m->numStars =
+                save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_MIN - 1, COURSE_MAX - 1);
 
-        if (m->action & ACT_FLAG_METAL_WATER) {
-            starGrabAction = ACT_STAR_DANCE_WATER;
-        }
-
-        if (m->action & ACT_FLAG_AIR) {
-            starGrabAction = ACT_FALL_AFTER_STAR_GRAB;
-        }
-
-        spawn_object(o, MODEL_NONE, bhvStarKeyCollectionPuffSpawner);
-
-        o->oInteractStatus = INT_STATUS_INTERACTED;
-        m->interactObj = o;
-        m->usedObj = o;
-
-        starIndex = (o->oBehParams >> 24) & 0x1F;
-        save_file_collect_star_or_key(m->numCoins, starIndex);
-
-        m->numStars =
-            save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_MIN - 1, COURSE_MAX - 1);
-
-        if (!noExit) {
-            drop_queued_background_music();
-            fadeout_level_music(126);
-        }
-
-        play_sound(SOUND_MENU_STAR_SOUND, m->marioObj->header.gfx.cameraToObject);
+            play_sound(SOUND_MENU_STAR_SOUND, m->marioObj->header.gfx.cameraToObject);
 #ifndef VERSION_JP
-        update_mario_sound_and_camera(m);
+            update_mario_sound_and_camera(m);
 #endif
 
-        if (grandStar) {
-            return set_mario_action(m, ACT_JUMBO_STAR_CUTSCENE, 0);
-        }
+            /* Actually do the save here since we don't leave the level */
+            save_file_do_save(gCurrSaveFileNum - 1);
+            return TRUE;
+        } else {
+            mario_stop_riding_and_holding(m);
+#ifdef VERSION_SH
+            queue_rumble_data(5, 80);
+#endif
 
-        return set_mario_action(m, starGrabAction, noExit + 2 * grandStar);
+            if (!noExit) {
+                m->hurtCounter = 0;
+                m->healCounter = 0;
+                if (m->capTimer > 1) {
+                    m->capTimer = 1;
+                }
+            }
+
+            if (noExit) {
+                starGrabAction = ACT_STAR_DANCE_NO_EXIT;
+            }
+
+            if (m->action & ACT_FLAG_SWIMMING) {
+                starGrabAction = ACT_STAR_DANCE_WATER;
+            }
+
+            if (m->action & ACT_FLAG_METAL_WATER) {
+                starGrabAction = ACT_STAR_DANCE_WATER;
+            }
+
+            if (m->action & ACT_FLAG_AIR) {
+                starGrabAction = ACT_FALL_AFTER_STAR_GRAB;
+            }
+
+            spawn_object(o, MODEL_NONE, bhvStarKeyCollectionPuffSpawner);
+
+            o->oInteractStatus = INT_STATUS_INTERACTED;
+            m->interactObj = o;
+            m->usedObj = o;
+
+            starIndex = (o->oBehParams >> 24) & 0x1F;
+            save_file_collect_star_or_key(m->numCoins, starIndex);
+
+            m->numStars =
+                save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_MIN - 1, COURSE_MAX - 1);
+
+            if (!noExit) {
+                drop_queued_background_music();
+                fadeout_level_music(126);
+            }
+
+            play_sound(SOUND_MENU_STAR_SOUND, m->marioObj->header.gfx.cameraToObject);
+#ifndef VERSION_JP
+            update_mario_sound_and_camera(m);
+#endif
+
+            if (grandStar) {
+                return set_mario_action(m, ACT_JUMBO_STAR_CUTSCENE, 0);
+            }
+
+            return set_mario_action(m, starGrabAction, noExit + 2 * grandStar);
+        }
     }
 
     return FALSE;
