@@ -826,17 +826,18 @@ static void (*LevelScriptJumpTable[])(void) = {
     /*3C*/ level_cmd_get_or_set_var,
 };
 
-struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
-    sScriptStatus = SCRIPT_RUNNING;
-    sCurrentCmd = cmd;
+struct LevelCommand *level_script_execute(struct LevelCommand *cmd, s16 frame_index, s16 frame_count) {
+    // Only execute level logic on real frames
+    if (frame_index == 0) {
+        sScriptStatus = SCRIPT_RUNNING;
+        sCurrentCmd = cmd;
 
-    while (sScriptStatus == SCRIPT_RUNNING) {
-        LevelScriptJumpTable[sCurrentCmd->type]();
+        while (sScriptStatus == SCRIPT_RUNNING) { LevelScriptJumpTable[sCurrentCmd->type](); }
+        profiler_log_thread5_time(LEVEL_SCRIPT_EXECUTE);
     }
 
-    profiler_log_thread5_time(LEVEL_SCRIPT_EXECUTE);
     init_render_image();
-    render_game();
+    render_game(frame_index, frame_count);
     end_master_display_list();
     alloc_display_list(0);
 

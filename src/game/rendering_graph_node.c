@@ -125,6 +125,9 @@ struct GraphNodeObject *gCurGraphNodeObject = NULL;
 struct GraphNodeHeldObject *gCurGraphNodeHeldObject = NULL;
 u16 gAreaUpdateCounter = 0;
 
+static s16 sFrameIndex = 0;
+static s16 sFrameCount = 0;
+
 #ifdef F3DEX_GBI_2
 LookAt lookAt;
 #endif
@@ -1039,8 +1042,10 @@ void geo_process_node_and_siblings(struct GraphNode *firstNode) {
  * The root node itself sets up the viewport, then all its children are processed
  * to set up the projection and draw display lists.
  */
-void geo_process_root(struct GraphNodeRoot *node, Vp *b, Vp *c, s32 clearColor) {
+void geo_process_root(struct GraphNodeRoot *node, Vp *b, Vp *c, s32 clearColor, s16 frame_index, s16 frame_count) {
     UNUSED s32 unused;
+    sFrameIndex = frame_index;
+    sFrameCount = frame_count;
 
     if (node->node.flags & GRAPH_RENDER_ACTIVE) {
         Mtx *initialMatrix;

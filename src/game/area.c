@@ -359,9 +359,9 @@ void play_transition_after_delay(s16 transType, s16 time, u8 red, u8 green, u8 b
     play_transition(transType, time, red, green, blue);
 }
 
-void render_game(void) {
+void render_game(s16 frame_index, s16 frame_count) {
     if (gCurrentArea != NULL && !gWarpTransition.pauseRendering) {
-        geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
+        geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor, frame_index, frame_count);
 
         gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
 

@@ -584,6 +584,12 @@ void setup_game_memory(void) {
 void thread5_game_loop(UNUSED void *arg) {
     struct LevelCommand *addr;
 
+    // Total number of frames per real frame
+    static const s16 FRAME_COUNT = 2;
+
+    // 0 is the real frame, 1..(FRAME_COUNT - 1) are the interpolated frames
+    s16 frame_index = 0;
+
     setup_game_memory();
 #ifdef VERSION_SH
     init_rumble_pak_scheduler_queue();
@@ -604,26 +610,40 @@ void thread5_game_loop(UNUSED void *arg) {
     rendering_init();
 
     while (TRUE) {
-        // if the reset timer is active, run the process to reset the game.
-        if (gResetTimer) {
-            draw_reset_bars();
-            continue;
-        }
-        profiler_log_thread5_time(THREAD5_START);
+        if (frame_index == 0) {
+            /*********************************************************
+             *           Real frame (do everything as normal)        *
+             *********************************************************/
 
-        // if any controllers are plugged in, start read the data for when
-        // read_controller_inputs is called later.
-        if (gControllerBits) {
+            // if the reset timer is active, run the process to reset the game.
+            if (gResetTimer) {
+                draw_reset_bars();
+                continue;
+            }
+            profiler_log_thread5_time(THREAD5_START);
+
+            // if any controllers are plugged in, start read the data for when
+            // read_controller_inputs is called later.
+            if (gControllerBits) {
 #ifdef VERSION_SH
-            block_until_rumble_pak_free();
+                block_until_rumble_pak_free();
 #endif
-            osContStartReadData(&gSIEventMesgQueue);
+                osContStartReadData(&gSIEventMesgQueue);
+            }
+
+            audio_game_loop_tick();
+            config_gfx_pool();
+            read_controller_inputs();
+            addr = level_script_execute(addr, frame_index, FRAME_COUNT);
+        } else {
+            /*********************************************************
+             *        Interpolated frame (just update gfx)           *
+             *********************************************************/
+
+            config_gfx_pool();
+            level_script_execute(NULL, frame_index, FRAME_COUNT);
         }
 
-        audio_game_loop_tick();
-        config_gfx_pool();
-        read_controller_inputs();
-        addr = level_script_execute(addr);
         display_and_vsync();
 
         // when debug info is enabled, print the "BUF %d" information.
@@ -632,5 +652,8 @@ void thread5_game_loop(UNUSED void *arg) {
             // amount of free space remaining.
             print_text_fmt_int(180, 20, "BUF %d", gGfxPoolEnd - (u8 *) gDisplayListHead);
         }
+
+        // Update frame index
+        frame_index = (frame_index + 1) % FRAME_COUNT;
     }
 }
