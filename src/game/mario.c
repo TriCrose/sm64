@@ -1174,9 +1174,6 @@ s32 transition_submerged_to_walking(struct MarioState *m) {
 s32 set_water_plunge_action(struct MarioState *m) {
     m->forwardVel = m->forwardVel / 4.0f;
     m->vel[1] = m->vel[1] / 2.0f;
-
-    if (!gFlooded) { m->pos[1] = m->waterLevel - 100; }
-
     m->faceAngle[2] = 0;
 
     vec3s_set(m->angleVel, 0, 0, 0);
@@ -1470,7 +1467,8 @@ void update_mario_health(struct MarioState *m) {
                     if ((m->pos[1] >= (m->waterLevel - 140)) && !terrainIsSnow) {
                         m->health += 0x1A;
                     } else if (!gDebugLevelSelect) {
-                        if (!gFlooded) { m->health -= (terrainIsSnow ? 3 : 1); }
+                        // Only take water damage if we haven't manually flooded the level
+                        if (gWaterState < 2) { m->health -= (terrainIsSnow ? 3 : 1); }
                     }
                 }
             }
@@ -1698,16 +1696,17 @@ void func_sh_8025574C(void) {
 s32 execute_mario_action(UNUSED struct Object *o) {
     s32 inLoop = TRUE;
 
-    if (gMarioState->controller->buttonPressed & L_TRIG) {
-        gFlooded ^= 1;
-    }
-
     if (gMarioState->action) {
         gMarioState->marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
         mario_reset_bodystate(gMarioState);
         update_mario_inputs(gMarioState);
         mario_handle_special_floors(gMarioState);
         mario_process_interactions(gMarioState);
+
+        // Update gWaterState appropriately
+        if (gMarioState->controller->buttonPressed & L_JPAD) { gWaterState = 0; }
+        else if (gMarioState->controller->buttonPressed & U_JPAD) { gWaterState = 1; }
+        else if (gMarioState->controller->buttonPressed & R_JPAD) { gWaterState = 2; }
 
         // If Mario is OOB, stop executing actions.
         if (gMarioState->floor == NULL) {

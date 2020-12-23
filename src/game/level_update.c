@@ -168,12 +168,13 @@ s8 sTimerRunning;
 s8 gNeverEnteredCastle;
 
 struct MarioState *gMarioState = &gMarioStates[0];
-s8 gFlooded = FALSE;
 u8 unused1[4] = { 0 };
 s8 sWarpCheckpointActive = FALSE;
 u8 unused3[4];
 u8 unused4[2];
 
+// 0 = drained, 1 = normal, 2 = flooded
+s8 gWaterState = 1;
 
 u16 level_control_timer(s32 timerOp) {
     switch (timerOp) {
