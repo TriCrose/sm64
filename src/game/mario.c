@@ -1175,7 +1175,7 @@ s32 set_water_plunge_action(struct MarioState *m) {
     m->forwardVel = m->forwardVel / 4.0f;
     m->vel[1] = m->vel[1] / 2.0f;
 
-    m->pos[1] = m->waterLevel - 100;
+    if (!gFlooded) { m->pos[1] = m->waterLevel - 100; }
 
     m->faceAngle[2] = 0;
 
@@ -1470,7 +1470,7 @@ void update_mario_health(struct MarioState *m) {
                     if ((m->pos[1] >= (m->waterLevel - 140)) && !terrainIsSnow) {
                         m->health += 0x1A;
                     } else if (!gDebugLevelSelect) {
-                        m->health -= (terrainIsSnow ? 3 : 1);
+                        if (!gFlooded) { m->health -= (terrainIsSnow ? 3 : 1); }
                     }
                 }
             }
@@ -1697,6 +1697,10 @@ void func_sh_8025574C(void) {
  */
 s32 execute_mario_action(UNUSED struct Object *o) {
     s32 inLoop = TRUE;
+
+    if (gMarioState->controller->buttonPressed & L_TRIG) {
+        gFlooded ^= 1;
+    }
 
     if (gMarioState->action) {
         gMarioState->marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;

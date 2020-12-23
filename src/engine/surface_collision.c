@@ -615,7 +615,7 @@ f32 find_water_level(f32 x, f32 z) {
         }
     }
 
-    return waterLevel;
+    return gFlooded ? CELL_HEIGHT_LIMIT : waterLevel;
 }
 
 /**

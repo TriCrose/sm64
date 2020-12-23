@@ -64,6 +64,7 @@ extern struct CreditsEntry *gCurrCreditsEntry;
 
 extern struct MarioState gMarioStates[];
 extern struct MarioState *gMarioState;
+extern s8 gFlooded;
 
 extern s16 sCurrPlayMode;
 extern u16 D_80339ECA;
