@@ -242,6 +242,7 @@ static void geo_process_perspective(struct GraphNodePerspective *node) {
     if (node->fnNode.node.children != NULL) {
         u16 perspNorm;
         Mtx *mtx = alloc_display_list(sizeof(*mtx));
+        Mtx *scale = alloc_display_list(sizeof(*scale));
 
 #ifdef VERSION_EU
         f32 aspect = ((f32) gCurGraphNodeRoot->width / (f32) gCurGraphNodeRoot->height) * 1.1f;
@@ -249,10 +250,13 @@ static void geo_process_perspective(struct GraphNodePerspective *node) {
         f32 aspect = (f32) gCurGraphNodeRoot->width / (f32) gCurGraphNodeRoot->height;
 #endif
 
+        guScale(scale, -1.0f, 1.0f, 1.0f);
+
         guPerspective(mtx, &perspNorm, node->fov, aspect, node->near, node->far, 1.0f);
         gSPPerspNormalize(gDisplayListHead++, perspNorm);
 
         gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+        gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(scale), G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
 
         gCurGraphNodeCamFrustum = node;
         geo_process_node_and_siblings(node->fnNode.node.children);

@@ -475,6 +475,7 @@ void run_demo_inputs(void) {
 // update the controller struct with available inputs if present.
 void read_controller_inputs(void) {
     s32 i;
+    u8 c_left_down, c_right_down;
 
     // if any controllers are plugged in, update the
     // controller information.
@@ -493,7 +494,18 @@ void read_controller_inputs(void) {
         // if we're receiving inputs, update the controller struct
         // with the new button info.
         if (controller->controllerData != NULL) {
-            controller->rawStickX = controller->controllerData->stick_x;
+            c_left_down = controller->controllerData->button & L_CBUTTONS;
+            c_right_down = controller->controllerData->button & R_CBUTTONS;
+
+            if (c_left_down && !c_right_down) {
+                controller->controllerData->button &= ~L_CBUTTONS;
+                controller->controllerData->button |=  R_CBUTTONS;
+            } else if (!c_left_down && c_right_down) {
+                controller->controllerData->button &= ~R_CBUTTONS;
+                controller->controllerData->button |=  L_CBUTTONS;
+            }
+
+            controller->rawStickX = -controller->controllerData->stick_x;
             controller->rawStickY = controller->controllerData->stick_y;
             controller->buttonPressed = controller->controllerData->button
                                         & (controller->controllerData->button ^ controller->buttonDown);
