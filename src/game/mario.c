@@ -1708,6 +1708,9 @@ s32 execute_mario_action(UNUSED struct Object *o) {
         else if (gMarioState->controller->buttonPressed & U_JPAD) { gWaterState = 1; }
         else if (gMarioState->controller->buttonPressed & R_JPAD) { gWaterState = 2; }
 
+        // Toggle gCollisionState when L button is pressed
+        if (gMarioState->controller->buttonPressed & L_TRIG) { gCollisionState ^= 1; }
+
         // If Mario is OOB, stop executing actions.
         if (gMarioState->floor == NULL) {
             return 0;

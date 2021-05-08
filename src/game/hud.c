@@ -275,8 +275,9 @@ void render_hud_mario_lives(void) {
  * Render the state of the water level.
  * Uses the same display flag as Mario's lives.
  */
-void render_hud_water_state(void) {
+void render_hud_water_collision_state(void) {
     const char* waterStateText = "";
+    const char* collisionStateText = "";
 
     switch(gWaterState) {
         case 0: waterStateText = "DRAINED"; break;
@@ -284,7 +285,13 @@ void render_hud_water_state(void) {
         case 2: waterStateText = "FLOODED"; break;
     }
 
-    print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(22), 22, waterStateText);
+    switch(gCollisionState) {
+        case 0: collisionStateText = "COLL OFF"; break;
+        case 1: collisionStateText = "COLL ON"; break;
+    }
+
+    print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(22), 45, waterStateText);
+    print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(22), 22, collisionStateText);
 }
 
 /**
@@ -469,7 +476,7 @@ void render_hud(void) {
 
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_LIVES) {
             render_hud_mario_lives();
-            render_hud_water_state();
+            render_hud_water_collision_state();
         }
 
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_COIN_COUNT) {

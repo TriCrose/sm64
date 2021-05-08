@@ -190,6 +190,10 @@ s32 find_wall_collisions(struct WallCollisionData *colData) {
 
     colData->numWalls = 0;
 
+    if (gCollisionState == 0) {
+        return numCollisions;
+    }
+
     if (x <= -LEVEL_BOUNDARY_MAX || x >= LEVEL_BOUNDARY_MAX) {
         return numCollisions;
     }

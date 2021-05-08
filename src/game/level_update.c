@@ -176,6 +176,9 @@ u8 unused4[2];
 // 0 = drained, 1 = normal, 2 = flooded
 s8 gWaterState = 1;
 
+// 0 = no collision, 1 = collision
+s8 gCollisionState = 1;
+
 u16 level_control_timer(s32 timerOp) {
     switch (timerOp) {
         case TIMER_CONTROL_SHOW:

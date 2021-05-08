@@ -68,6 +68,9 @@ extern struct MarioState *gMarioState;
 // 0 = drained, 1 = normal, 2 = flooded
 extern s8 gWaterState;
 
+// 0 = no collision, 1 = collision
+extern s8 gCollisionState;
+
 extern s16 sCurrPlayMode;
 extern u16 D_80339ECA;
 extern s16 sTransitionTimer;
